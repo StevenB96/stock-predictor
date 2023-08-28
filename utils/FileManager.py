@@ -16,7 +16,6 @@ class FileManager:
         self.combined_data = combined_data
 
     def combine_data(self):
-        print(type(self.stock_data), type(self.company_data))
         merged_df = pandas.merge(
             self.stock_data, self.company_data, left_on='Ticker', right_on='Symbol')
         new_order = [
@@ -47,6 +46,11 @@ class FileManager:
             return None
 
     def load_data(self):
+        pandas.set_option('display.max_column', 100)
+        pandas.set_option('display.max_rows', 100)
+        pandas.set_option('display.max_seq_items', None)
+        # pandas.set_option('display.max_colwidth', 500)
+        pandas.set_option('expand_frame_repr', True)
         self.load_stock_data()
         self.load_company_data()
         self.combine_data()
@@ -61,7 +65,8 @@ class FileManager:
         txt_files = [file for file in file_list if file.endswith('.txt')]
 
         # Use multiprocessing to read files concurrently
-        with multiprocessing.Pool() as pool:
+        n_processes = multiprocessing.cpu_count() - 1
+        with multiprocessing.Pool(processes=n_processes) as pool:
             results = pool.map_async(self.load_stock_file, [os.path.join(
                 folder_path, file) for file in txt_files])
 
